@@ -40,7 +40,7 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
+
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
 
@@ -73,7 +73,6 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 app.post('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
   urlDatabase[shortURL] = req.body.newURL;
-  console.log(req.body);
 
   res.redirect("/urls");
 });
@@ -84,5 +83,5 @@ app.post('/urls/:shortURL/edit', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+  console.log(`TinyApp listening on port ${PORT}!`);
 });
