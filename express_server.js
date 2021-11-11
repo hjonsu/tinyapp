@@ -4,7 +4,8 @@ const PORT = 8080; // default port 8080
 const cookieParser = require('cookie-parser');
 const {
   generateRandomString,
-  emailLookup
+  emailExists,
+  userIdOfEmail
 } = require('./helpers/userHelpers');
 const {
   urlDatabase,
@@ -89,13 +90,36 @@ app.post('/urls/:shortURL/edit', (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
+app.get('/login', (req, res) => {
+  const userID = req.cookies["userID"];
+  const templateVars = {
+    urls: urlDatabase,
+    user: usersDB[userID]
+  };
+  res.render("urls_login", templateVars);
+});
+
 app.post('/login', (req, res) => {
   const {
-    email
+    email,
+    password
   } = req.body;
-  res.cookie("userID", email);
-  res.cookie("isAuthenticated", true);
-  return res.redirect("/urls");
+
+  if (emailExists(usersDB, email)) {
+
+    const userID = userIdOfEmail(usersDB, email);
+    if (usersDB[userID].password === password) {
+      res.cookie("userID", userID);
+      res.cookie("isAuthenticated", true);
+      res.redirect("/urls");
+      return;
+    } else {
+      return res.sendStatus(403);
+    }
+  } else {
+    res.sendStatus(403);
+    return;
+  }
 });
 
 app.post("/logout", (req, res) => {
@@ -123,7 +147,7 @@ app.post("/register", (req, res) => {
 
   console.log(usersDB);
   if (email && password) {
-    if (emailLookup(usersDB, email) === true) {
+    if (emailExists(usersDB, email) === false) {
       const userID = generateRandomString();
       usersDB[userID] = {
         id: userID,

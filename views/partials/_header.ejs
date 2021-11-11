@@ -13,10 +13,9 @@
     </div>
     <% if(!user){ %>
     <form method="GET" action="/register">
-      <button type="submit" class="btn btn-default">Register</button>
+      <button type="submit" class="btn btn-primary" style="margin-right: 10px;">Register</button>
     </form>
-    <form method="POST" action="/login">
-      <input type="text" name="email" placeholder="email" required>
+    <form method="GET" action="/login">
       <button type="submit" class="btn btn-primary">Login</button>
     </form>
     <% } %>

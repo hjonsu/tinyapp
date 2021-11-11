@@ -9,28 +9,25 @@ const generateRandomString = () => {
   return result;
 };
 
-const emailLookup = (userDB, email) => {
+const emailExists = (userDB, email) => {
   for (const user in userDB) {
     if (userDB[user].email === email) {
-      return false;
+      return true;
     }
   }
-  return true;
+  return false;
 };
-console.log(emailLookup({
-  "userRandomID": {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur"
-  },
-  "user2RandomID": {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk"
+
+const userIdOfEmail = (userDB, email) => {
+  for (const user in userDB) {
+    if (userDB[user].email === email) {
+      return user;
+    }
   }
-}, "user@exampe.com"));
+};
 
 module.exports = {
   generateRandomString,
-  emailLookup
+  emailExists,
+  userIdOfEmail
 };
