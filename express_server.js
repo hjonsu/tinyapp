@@ -2,6 +2,9 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcryptjs');
+// const password = "purple-monkey-dinosaur"; // found in the req.params object
+// const hashedPassword = bcrypt.hashSync(password, 10);
 const {
   generateRandomString,
   emailExists,
@@ -114,19 +117,21 @@ app.post('/login', (req, res) => {
   if (emailExists(usersDB, email)) {
 
     const userID = userIdOfEmail(usersDB, email);
-    if (usersDB[userID].password === password) {
+    if (bcrypt.compareSync(password, usersDB[userID].password)) {
       res.cookie("userID", userID);
       res.cookie("isAuthenticated", true);
       res.redirect("/urls");
       return;
     } else {
-      return res.sendStatus(403);
+      return res.send("incorrect password");
     }
   } else {
     res.sendStatus(403);
     return;
   }
 });
+
+
 
 app.post("/logout", (req, res) => {
   res.clearCookie("userID");
@@ -157,9 +162,10 @@ app.post("/register", (req, res) => {
       usersDB[userID] = {
         id: userID,
         email,
-        password
+        password: bcrypt.hashSync(password, 10),
       };
       res.cookie("userID", userID);
+      console.log(usersDB);
       res.redirect("/urls");
       return;
     } else {
