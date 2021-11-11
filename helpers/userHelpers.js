@@ -26,8 +26,19 @@ const userIdOfEmail = (userDB, email) => {
   }
 };
 
+const urlsForUser = (urlDB, userID) => {
+  const urlsMine = {};
+  for (const shortURL in urlDB) {
+    if (urlDB[shortURL].userID === userID) {
+      urlsMine[shortURL] = urlDB[shortURL];
+    }
+  }
+  return urlsMine;
+};
+
 module.exports = {
   generateRandomString,
   emailExists,
-  userIdOfEmail
+  userIdOfEmail,
+  urlsForUser
 };
