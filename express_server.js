@@ -115,31 +115,28 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  res.redirect(`/register`);
-});
-
-app.post("/registered", (req, res) => {
   // Get the information from the body of the request
   const {
     email,
     password
   } = req.body;
-  const userID = generateRandomString();
-  usersDB[userID] = {
-    id: userID,
-    email,
-    password
-  };
 
   console.log(usersDB);
-  if (email === "" || password === "") {
-    return res.status(400);
+  if (email && password) {
+    if (emailLookup(usersDB, email) === true) {
+      const userID = generateRandomString();
+      usersDB[userID] = {
+        id: userID,
+        email,
+        password
+      };
+      res.cookie("userID", userID);
+      res.redirect("/urls");
+      return;
+    } else {
+      return res.sendStatus(400);
+    }
+  } else {
+    return res.sendStatus(400);
   }
-  if (emailLookup(usersDB, email)) {
-    return res.status(400);
-  }
-
-  res.cookie("userID", userID);
-
-  res.redirect("/urls");
 });
