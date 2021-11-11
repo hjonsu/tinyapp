@@ -2,28 +2,27 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const cookieParser = require('cookie-parser');
+const {
+  generateRandomString
+} = require('./helpers/userHelpers');
+const {
+  urlDatabase
+} = require('./data/userData');
 
 app.set("view engine", "ejs");
 app.use(cookieParser());
-
-app.listen(PORT, () => {
-  console.log(`Tiny app listening on port ${PORT}!`);
-});
-
-const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
-};
-
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({
   extended: true
 }));
 
+app.listen(PORT, () => {
+  console.log(`Tiny app listening on port ${PORT}!`);
+});
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
-
 
 app.get("/urls", (req, res) => {
   const templateVars = {
@@ -65,16 +64,6 @@ app.get('/u/:shortURL', (req, res) => {
   res.redirect(longURL);
 });
 
-const generateRandomString = () => {
-  let result = '';
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const charactersLength = characters.length;
-  for (let i = 0; i < 6; i++) {
-    result += characters.charAt(Math.floor(Math.random() *
-      charactersLength));
-  }
-  return result;
-};
 
 app.post('/urls/:shortURL/delete', (req, res) => {
   const shortURL = req.params.shortURL;
