@@ -3,10 +3,12 @@ const app = express();
 const PORT = 8080; // default port 8080
 const cookieParser = require('cookie-parser');
 const {
-  generateRandomString
+  generateRandomString,
+  emailLookup
 } = require('./helpers/userHelpers');
 const {
-  urlDatabase
+  urlDatabase,
+  usersDB
 } = require('./data/userData');
 
 app.set("view engine", "ejs");
@@ -25,27 +27,29 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
+  const userID = req.cookies["userID"];
   const templateVars = {
-    username: req.cookies["Username"],
-    urls: urlDatabase
+    urls: urlDatabase,
+    user: usersDB[userID]
   };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
+  const userID = req.cookies["userID"];
   const templateVars = {
-    username: req.cookies["Username"],
-    urls: urlDatabase
+    urls: urlDatabase,
+    user: usersDB[userID]
   };
   res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-
+  const userID = req.cookies["userID"];
   const templateVars = {
-    username: req.cookies["Username"],
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
+    user: usersDB[userID]
   };
 
   res.render("urls_show", templateVars);
@@ -80,22 +84,62 @@ app.post('/urls/:shortURL', (req, res) => {
 });
 
 app.post('/urls/:shortURL/edit', (req, res) => {
+  console.log(req.params.shortURL);
   const shortURL = req.params.shortURL;
   res.redirect(`/urls/${shortURL}`);
 });
 
 app.post('/login', (req, res) => {
   const {
-    username
+    email
   } = req.body;
-  res.cookie("Username", username);
+  res.cookie("userID", email);
   res.cookie("isAuthenticated", true);
   return res.redirect("/urls");
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("Username");
+  res.clearCookie("userID");
   res.clearCookie("isAuthenticated");
 
   return res.redirect("/urls");
+});
+
+app.get("/register", (req, res) => {
+  const userID = req.cookies["userID"];
+  const templateVars = {
+    urls: urlDatabase,
+    user: usersDB[userID]
+  };
+  res.render("urls_register", templateVars);
+});
+
+app.post("/register", (req, res) => {
+  res.redirect(`/register`);
+});
+
+app.post("/registered", (req, res) => {
+  // Get the information from the body of the request
+  const {
+    email,
+    password
+  } = req.body;
+  const userID = generateRandomString();
+  usersDB[userID] = {
+    id: userID,
+    email,
+    password
+  };
+
+  console.log(usersDB);
+  if (email === "" || password === "") {
+    return res.status(400);
+  }
+  if (emailLookup(usersDB, email)) {
+    return res.status(400);
+  }
+
+  res.cookie("userID", userID);
+
+  res.redirect("/urls");
 });

@@ -9,6 +9,16 @@ const generateRandomString = () => {
   return result;
 };
 
+const emailLookup = (userDB, email) => {
+  for (const user in userDB) {
+    if (userDB[user].email === email) {
+      return true;
+    }
+  }
+  return false;
+};
+
 module.exports = {
   generateRandomString,
-}
+  emailLookup
+};
