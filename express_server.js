@@ -1,8 +1,14 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
+const cookieParser = require('cookie-parser');
 
 app.set("view engine", "ejs");
+app.use(cookieParser());
+
+app.listen(PORT, () => {
+  console.log(`Tiny app listening on port ${PORT}!`);
+});
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -21,17 +27,24 @@ app.get("/", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const templateVars = {
+    username: req.cookies["Username"],
     urls: urlDatabase
   };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = {
+    username: req.cookies["Username"],
+    urls: urlDatabase
+  };
+  res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
+
   const templateVars = {
+    username: req.cookies["Username"],
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
   };
@@ -83,6 +96,18 @@ app.post('/urls/:shortURL/edit', (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+app.post('/login', (req, res) => {
+  const {
+    username
+  } = req.body;
+  res.cookie("Username", username);
+  res.cookie("isAuthenticated", true);
+  return res.redirect("/urls");
+});
+
+app.post("/logout", (req, res) => {
+  res.clearCookie("Username");
+  res.clearCookie("isAuthenticated");
+
+  return res.redirect("/urls");
 });
