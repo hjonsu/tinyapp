@@ -10,6 +10,8 @@
 
 <body>
   <%- include('partials/_header') %>
+  <% if(userID === originalUser){ %>
+
   <div class="card text-center">
     <div class="card-header"></div>
     <div class="card-body">
@@ -23,9 +25,20 @@
         <button type="submit" class="btn btn-primary"> Submit
         </button>
       </form>
+      <button id="myButton" class="btn btn-danger" style="margin-top: 10px;">Create Another URL</button>
+
+      <script type=" text/javascript">
+        document.getElementById("myButton").onclick = function () {
+          location.href = "/urls/new";
+        };
+      </script>
     </div>
+    <% } %>
+    <% if(userID !== originalUser){ %>
+    <h3>Login to access this URL!</h3>
+    <% } %>
   </div> <!-- Bootstrap JS -->
-  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+  <script src=" https://code.jquery.com/jquery-3.3.1.slim.min.js"
     integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous">
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
