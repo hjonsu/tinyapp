@@ -64,9 +64,7 @@ app.get("/urls/new", (req, res) => {
   }
   res.render("urls_new", templateVars);
 });
-app.post("/urls/:shortURL", (req, res) => {
 
-})
 
 app.get("/urls/:shortURL", (req, res) => {
   const userID = req.session.userID;
@@ -179,7 +177,6 @@ app.post("/register", (req, res) => {
     password
   } = req.body;
 
-  console.log(usersDB);
   if (email && password) {
     if (emailExists(usersDB, email) === false) {
       const userID = generateRandomString();
