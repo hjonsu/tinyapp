@@ -74,7 +74,6 @@ app.get("/urls/:shortURL", (req, res) => {
     return;
   }
   if (!ownUrl(userID, urlDatabase, shortURL)) {
-    console.log(urlDatabase);
     res.status(403).send("This is not your url!");
     return;
   }
@@ -99,7 +98,7 @@ app.post("/urls", (req, res) => {
     longURL,
     userID
   };
-  console.log(urlDatabase);
+
   res.redirect(`/urls/${shortURL}`);
 });
 
