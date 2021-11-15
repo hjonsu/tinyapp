@@ -36,10 +36,23 @@ const urlsForUser = (urlDB, userID) => {
   return urlsMine;
 };
 
+const isLoggedIn = (userDB, userID) => (userID in userDB);
+
+const ownUrl = (userID, urlDB, shortURL) => {
+  if (urlDB[shortURL] !== undefined) {
+    if (userID === urlDB[shortURL].userID) {
+      return true;
+    }
+  }
+  return false;
+};
+
 
 module.exports = {
   generateRandomString,
   emailExists,
   userIdOfEmail,
-  urlsForUser
+  urlsForUser,
+  isLoggedIn,
+  ownUrl
 };

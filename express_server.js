@@ -8,7 +8,9 @@ const {
   generateRandomString,
   emailExists,
   userIdOfEmail,
-  urlsForUser
+  urlsForUser,
+  isLoggedIn,
+  ownUrl
 } = require('./helpers/userHelpers');
 const {
   urlDatabase,
@@ -27,16 +29,13 @@ app.use(cookieSession({
 }));
 
 
-
-
-
-
-app.listen(PORT, () => {
-  console.log(`Tiny app listening on port ${PORT}!`);
-});
-
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  const userID = req.session.userID;
+  if (!isLoggedIn(usersDB, userID)) {
+    res.redirect('/login');
+    return;
+  }
+  res.redirect('/urls');
 });
 
 app.get("/urls", (req, res) => {
@@ -45,7 +44,7 @@ app.get("/urls", (req, res) => {
     urls: urlsForUser(urlDatabase, userID),
     user: usersDB[userID]
   };
-  if (!userID) {
+  if (!isLoggedIn(usersDB, userID)) {
     res.redirect('/login');
     return;
   }
@@ -58,7 +57,7 @@ app.get("/urls/new", (req, res) => {
     urls: urlDatabase,
     user: usersDB[userID]
   };
-  if (!userID) {
+  if (!isLoggedIn(usersDB, userID)) {
     res.redirect('/login');
     return;
   }
@@ -68,12 +67,25 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   const userID = req.session.userID;
+  const longURL = urlDatabase[req.params.shortURL].longURL;
+  const shortURL = req.params.shortURL;
+  if (!isLoggedIn(usersDB, userID)) {
+    res.redirect('/login');
+    return;
+  }
+  if (!ownUrl(userID, urlDatabase, shortURL)) {
+    console.log(urlDatabase);
+    res.status(403).send("This is not your url!");
+    return;
+  }
+  const user = usersDB[userID];
+  const originalUser = urlDatabase[req.params.shortURL].userID;
   const templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL].longURL,
-    user: usersDB[userID],
+    shortURL,
+    longURL,
+    user,
     userID,
-    originalUser: urlDatabase[req.params.shortURL].userID
+    originalUser,
   };
   res.render("urls_show", templateVars);
 });
@@ -81,11 +93,13 @@ app.get("/urls/:shortURL", (req, res) => {
 app.post("/urls", (req, res) => {
   const userID = req.session.userID;
   const shortURL = generateRandomString();
+  const longURL = req.body.longURL;
+
   urlDatabase[shortURL] = {
-    longURL: req.body.longURL,
+    longURL,
     userID
   };
-
+  console.log(urlDatabase);
   res.redirect(`/urls/${shortURL}`);
 });
 
@@ -103,22 +117,38 @@ app.get('/u/:shortURL', (req, res) => {
 
 app.post('/urls/:shortURL/delete', (req, res) => {
   const shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL];
+  const userID = req.session.userID;
+  if (isLoggedIn(usersDB, userID) && ownUrl(userID, urlDatabase, shortURL)) {
+    delete urlDatabase[shortURL];
+    res.redirect("/urls");
+    return;
+  }
+  res.redirect('/login');
 
-  res.redirect("/urls");
 });
 
 app.post('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
-  if (req.body.newURL) {
-    urlDatabase[shortURL].longURL = req.body.newURL;
-    res.redirect("/urls");
+  const userID = req.session.userID;
+
+  if (isLoggedIn(usersDB, userID)) {
+    if (ownUrl(userID, urlDatabase, shortURL)) {
+
+      if (req.body.newURL) {
+        urlDatabase[shortURL].longURL = req.body.newURL;
+        res.redirect("/urls");
+        return;
+      }
+    }
+    res.status(403).send("This is not your URL!");
     return;
   }
+  res.redirect('/login');
+
 
 });
 
-app.post('/urls/:shortURL/edit', (req, res) => {
+app.get('/urls/:shortURL/edit', (req, res) => {
   const shortURL = req.params.shortURL;
   res.redirect(`/urls/${shortURL}`);
 });
@@ -196,4 +226,8 @@ app.post("/register", (req, res) => {
     res.status(400).send("Don't leave Email/Password Blank!");
     return;
   }
+});
+
+app.listen(PORT, () => {
+  console.log(`Tiny app listening on port ${PORT}!`);
 });
