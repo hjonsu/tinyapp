@@ -36,7 +36,7 @@ const urlsForUser = (urlDB, userID) => {
   return urlsMine;
 };
 
-const isLoggedIn = (userDB, userID) => (userID in userDB);
+const inUserDb = (userDB, userID) => (userID in userDB);
 
 const ownUrl = (userID, urlDB, shortURL) => {
   if (urlDB[shortURL] !== undefined) {
@@ -53,6 +53,6 @@ module.exports = {
   emailExists,
   userIdOfEmail,
   urlsForUser,
-  isLoggedIn,
+  inUserDb,
   ownUrl
 };

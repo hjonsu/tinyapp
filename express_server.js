@@ -9,8 +9,8 @@ const {
   emailExists,
   userIdOfEmail,
   urlsForUser,
-  isLoggedIn,
-  ownUrl
+  inUserDb,
+  ownUrl,
 } = require('./helpers/userHelpers');
 const {
   urlDatabase,
@@ -31,7 +31,7 @@ app.use(cookieSession({
 
 app.get("/", (req, res) => {
   const userID = req.session.userID;
-  if (!isLoggedIn(usersDB, userID)) {
+  if (!inUserDb(usersDB, userID)) {
     res.redirect('/login');
     return;
   }
@@ -44,7 +44,7 @@ app.get("/urls", (req, res) => {
     urls: urlsForUser(urlDatabase, userID),
     user: usersDB[userID]
   };
-  if (!isLoggedIn(usersDB, userID)) {
+  if (!inUserDb(usersDB, userID)) {
     res.redirect('/login');
     return;
   }
@@ -57,7 +57,7 @@ app.get("/urls/new", (req, res) => {
     urls: urlDatabase,
     user: usersDB[userID]
   };
-  if (!isLoggedIn(usersDB, userID)) {
+  if (!inUserDb(usersDB, userID)) {
     res.redirect('/login');
     return;
   }
@@ -69,7 +69,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const userID = req.session.userID;
   const longURL = urlDatabase[req.params.shortURL].longURL;
   const shortURL = req.params.shortURL;
-  if (!isLoggedIn(usersDB, userID)) {
+  if (!inUserDb(usersDB, userID)) {
     res.redirect('/login');
     return;
   }
@@ -93,7 +93,10 @@ app.post("/urls", (req, res) => {
   const userID = req.session.userID;
   const shortURL = generateRandomString();
   const longURL = req.body.longURL;
-
+  if (!inUserDb(usersDB, userID)) {
+    res.redirect('/login');
+    return;
+  }
   urlDatabase[shortURL] = {
     longURL,
     userID
@@ -117,7 +120,7 @@ app.get('/u/:shortURL', (req, res) => {
 app.post('/urls/:shortURL/delete', (req, res) => {
   const shortURL = req.params.shortURL;
   const userID = req.session.userID;
-  if (isLoggedIn(usersDB, userID) && ownUrl(userID, urlDatabase, shortURL)) {
+  if (inUserDb(usersDB, userID) && ownUrl(userID, urlDatabase, shortURL)) {
     delete urlDatabase[shortURL];
     res.redirect("/urls");
     return;
@@ -130,7 +133,7 @@ app.post('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
   const userID = req.session.userID;
 
-  if (isLoggedIn(usersDB, userID)) {
+  if (inUserDb(usersDB, userID)) {
     if (ownUrl(userID, urlDatabase, shortURL)) {
 
       if (req.body.newURL) {
@@ -143,8 +146,6 @@ app.post('/urls/:shortURL', (req, res) => {
     return;
   }
   res.redirect('/login');
-
-
 });
 
 app.get('/urls/:shortURL/edit', (req, res) => {
